@@ -3,11 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
-    os.getenv('DB_USER', 'flask'),
-    os.getenv('DB_PASSWORD', ''),
+    os.getenv('DB_USER', 'root'),
+    os.getenv('DB_PASSWORD'),
     os.getenv('DB_HOST', 'mysql'),
-    os.getenv('DB_NAME', 'flask')
+    os.getenv('DB_NAME', 'dbtodo')
 )
+
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -45,7 +46,7 @@ def update(todo_id):
     db.session.commit()
     return redirect(url_for("index"))
 
-@app.route('/delete/<int:todo_id>')
+@app.route('/delete/<int:todo_id>', methods=["DELETE"])
 def delete(todo_id):
     todo = Todo.query.filter_by(id=todo_id).first()
     db.session.delete(todo)
