@@ -7,3 +7,18 @@ jobs:
     steps:
       - name: Print Hello
         run: echo "Hello World"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start Docker Compose
+        run: docker-compose up -d
+
+      - name: Wait for services
+        run: sleep 20
+
+      - name: Test Add Endpoint
+        run: |
+          curl -X POST http://localhost:5001/add \
+          -d "title=Task from Github Actions" \
+          --fail --verbose
