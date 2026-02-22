@@ -22,7 +22,7 @@ jobs:
       # 4. בדיקת ה-Endpoint (פורט 5001 לפי ה-Compose שלך)
       - name: Test Endpoint
         run: |
-          curl -f http://localhost:9999/ || exit 1
+          curl -f http://localhost:5001/ || exit 1
 
       # 5. ניקוי קונטיינרים בסיום (תמיד ירוץ אלא אם נרצה אחרת)
       - name: Cleanup
