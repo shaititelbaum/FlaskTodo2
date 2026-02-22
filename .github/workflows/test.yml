@@ -1,0 +1,31 @@
+name: Flask App CI Test
+
+# ה-Action ירוץ בכל פעם שאתה עושה Push לקוד
+on: [push]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. העתקת הקוד מה-Repository למכונה של GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. הרמת האפליקציה עם Docker Compose
+      - name: Start Docker Compose
+        run: docker-compose up -d
+
+      # 3. המתנה שהשרת יעלה (Flask לפעמים צריך כמה שניות)
+      - name: Wait for Server
+        run: sleep 10
+
+      # 4. הבדיקה האמיתית - האם הסרבר מחזיר תשובה תקינה?
+      - name: Test Endpoint
+        run: |
+          # curl -f יחזיר שגיאה (ויכשיל את ה-Action) אם הסטטוס הוא לא 200
+          curl -f http://localhost:5000/ || exit 1
+
+      # 5. כיבוי הקונטיינרים בסיום
+      - name: Cleanup
+        run: docker-compose down
