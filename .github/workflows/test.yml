@@ -7,23 +7,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. מוריד את הקוד שלך למכונה של גיטהאב
+      # 1. הורדת הקוד מה-Repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. מקים את כל ה-Services (app, mysql, test)
+      # 2. הרמת הקונטיינרים (Flask, MySQL וכו')
       - name: Start Docker Compose
         run: docker compose up -d
 
-      # 3. המתנה ל-MySQL ו-Flask (MySQL לוקח זמן לעלות בפעם הראשונה)
+      # 3. המתנה שהשירותים יעלו (במיוחד MySQL)
       - name: Wait for services to be ready
         run: sleep 40
 
-      # 4. הבדיקה - פונים לפורט 5001 כפי שמוגדר ב-Mapping שלך
+      # 4. בדיקת ה-Endpoint (פורט 5001 לפי ה-Compose שלך)
       - name: Test Endpoint
         run: |
-          curl -v http://localhost:5001/ || exit 1
+          curl -f http://localhost:5001/ || exit 1
 
-      # 5. ניקוי הקונטיינרים
+      # 5. ניקוי קונטיינרים בסיום (תמיד ירוץ אלא אם נרצה אחרת)
       - name: Cleanup
+        if: always() # מבטיח שהקונטיינרים יסגרו גם אם הטסט נכשל
         run: docker compose down
+
+      # 6. שליחת מייל במקרה של כישלון בלבד
+      - name: Send Email on Failure
+        if: failure() # הקסם קורה כאן: השלב הזה ירוץ רק אם אחד השלבים למעלה נכשל
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "GitHub Action Failed: ${{ github.repository }}"
+          to: "shaittitelbaum@gmail.com" # כאן תכתוב את המייל שאליו יישלח הדיווח
+          from: "GitHub Actions CI"
+          body: |
+            הבדיקה נכשלה! ❌
+            הפרויקט: ${{ github.repository }}
+            הענף: ${{ github.ref }}
+            לפרטים נוספים והלוגים המלאים, כנס לכאן:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
