@@ -7,20 +7,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. מוריד את הקוד שלך למכונה של גיטהאב
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. מקים את כל ה-Services (app, mysql, test)
       - name: Start Docker Compose
-        # הורדנו את המקף בין ה-docker ל-compose
         run: docker compose up -d
 
-      - name: Wait for Server
-        run: sleep 10
+      # 3. המתנה ל-MySQL ו-Flask (MySQL לוקח זמן לעלות בפעם הראשונה)
+      - name: Wait for services to be ready
+        run: sleep 40
 
+      # 4. הבדיקה - פונים לפורט 5001 כפי שמוגדר ב-Mapping שלך
       - name: Test Endpoint
         run: |
-          curl -f http://localhost:5000/ || exit 1
+          curl -v http://localhost:5001/ || exit 1
 
+      # 5. ניקוי הקונטיינרים
       - name: Cleanup
-        # גם כאן הורדנו את המקף
         run: docker compose down
